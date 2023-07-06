@@ -1,10 +1,8 @@
 # Library
 
-All the PY file are some "libraries" that may be use in your code.
+All the PY file are some "libraries" that may be use in your code. They are not really libraries but part of code you may need, feel free to use them.
 
-They are not really libraries but part of code you may need, feel free to use them.
-
-This document follow t
+This document contains most if not all the information you may need for your challenge. It follows this arrangement:
 
 - [pyb.infos](#infos)
 - [Functions](#Functions)
@@ -18,8 +16,16 @@ This document follow t
 	- [stop](#stop)
 	- [rng](#rng)
 - [Classes](#Classes)
+	- [Timer](#Timer)
+	- [ADC](#ADC)
+	- [DAC](#DAC)
+	- [Switch](#Switch)
+	- [LED](#LED)
+	- [Pin](#Pin)
+	- [PinAF](#PinAF)
+	- [ExtInt](#ExtInt)
+	- [RTC](#RTC)
 
-The board comes already with some function that allow the user to code.
 
 <a id="infos"></a>
 # pyb.infos
@@ -64,7 +70,7 @@ If you have any question about this, do not hesitate to ask a student of a teach
 # Functions available
 
 <a id="mdelay"></a>
-### <span style="color: blue;">pyb.delay: int -&gt; void</span>
+### pyb.delay: int -> void
 Wait for n milliseconds.
 
 <a id="udelay"></a>
@@ -102,7 +108,7 @@ Return a 30 bit hardware generated random number.
 <a id="Classes"></a>
 # Classes
 
-
+<a id="Timer"></a>
 ## Timer
 
 ### pyb.Timer: int -> Timer
@@ -137,7 +143,7 @@ Get the frequency of the source of the timer.
 
 There is another type of timer (timerchannel), but I don't think you'll need it. If you need it, feel free to ask students or teacher about them.
 
-
+<a id="ADC"></a>
 ## ADC
 
 ### pyb.ADC: str -> ADC
@@ -170,7 +176,7 @@ Return the MCU VBAT (BATtery Voltage).
 ### read\_vref:
 Return the MCU supply voltage.
 
-
+<a id="DAC"></a>
 ## DAC:
 
 ### pyb.DAC: str -> DAC
@@ -199,7 +205,7 @@ Generate a triangular wave at the frequency entered as a parameter (the amplitud
 ### noise:
 generate a noise signal on the DAC.
 
-
+<a id="Switch"></a>
 ## Switch
 
 ### pyb.Switch: void -> Switch
@@ -216,7 +222,7 @@ Return True or False depending of the state of the switch. (not really sure abou
 ### callback:
 Allow the user to define a callback function (exemple in the library)
 
-
+<a id="LED"></a>
 ## LED
 
 ## pyb.LED: int -> LED
@@ -236,7 +242,7 @@ Change the state of the LED
 ### intensity(n):
 Set the intensity of the LED to n (do not work on our board as far as I know)
 
-
+<a id="Pin"></a>
 ## Pin
 
 ### pyb.Pin: str -> Pin
@@ -259,14 +265,14 @@ value({0,1}), set the pin to high (1) or low (0).
 
 ### init(mode, pull):
 Where the mode can be: 
-		pyb.Pin.IN (input pin)
-		pyb.Pin.OUT\_PP (output in push-pull)
-		pyb.Pin.OUT\_OD (output in open-drain)
-		pyb.Pin.ALT (alternate, use for I2C and SPI for example
+		- pyb.Pin.IN (input pin)
+		- pyb.Pin.OUT\_PP (output in push-pull)
+		- pyb.Pin.OUT\_OD (output in open-drain)
+		- pyb.Pin.ALT (alternate, use for I2C and SPI for example
 and pull can be:
-		pyb.Pin.PULL\_UP
-		pyb.Pin.PULL\_DOWN
-		None
+		- pyb.Pin.PULL\_UP
+		- pyb.Pin.PULL\_DOWN
+		- None
 
 ### mode:
 Get the current mode of the pin (is not a set function).
@@ -296,28 +302,95 @@ Return the name of the pin.
 Return the address of the GPIO block associated with the pin.
 
 
+<a id="PinAF"></a>
+## PinAF
+
+To use it, you may use code like so:
+
+```
+pinaf = pyb.Pin(pub.Pin.board.X1, mode=pyb.Pin.ALT, alt=1)
+```
+With alt beeing the index of the alternate function in pyb.Pin.board.X1.af_list().
+
+The methods are:
+
+### \_\_str\_\_:
+Return a string to describe the function use.
+
+### index:
+Return the function index.
+
+### name:
+Return the name of the function.
+
+### reg:
+Return the base register associated with the peripheral assigned to the function.
+
+<a id="ExtInt"></a>
 ## ExtInt
 
 ### pyb.ExtInt: str -> int -> int -> (ExtInt -> void) -> ExtInt
 Create an external interrupt on the pin enter as a str. The first int is the trigger and can be:
-		pyb.ExtInt.IRQ\_RISING (trigger on rising edge)
-		pyb.ExtInt.IRQ\_FALLING (trigger on falling edge)
-		pyb.ExtInt.IRQ\_RISING_FALLING (trigger on a change of state)
+		- pyb.ExtInt.IRQ\_RISING (trigger on rising edge)
+		- pyb.ExtInt.IRQ\_FALLING (trigger on falling edge)
+		- pyb.ExtInt.IRQ\_RISING_FALLING (trigger on a change of state)
 the second int is the pull of the pin and can be:
-		pyb.ExtInt.PULL_NONE
-		pyb.ExtInt.PULL_UP
-		pyb.ExtInt.PULL_DOWN
+		- pyb.ExtInt.PULL_NONE
+		- pyb.ExtInt.PULL_UP
+		- pyb.ExtInt.PULL_DOWN
 the function is the callback function that'll be use when the interrupt is trigger
-It has three methods:
-enable -> enable the external interrupt
-disable -> disable the external interrupt
-line -> return the pin number
+
+The methods are:
+
+### enable:
+Enable the external interrupt
+
+### disable:
+Disable the external interrupt
+
+### line:
+Return the pin number
+
+<a id="RTC"></a>
+## RTC
+
+### pyb.RTC
+Allow the user to manipulate the Real Time Clock inside the board.
+
+The methods are:
+
+### datetime:
+Return or set (year, month, day, day of the week, hours, minutes, secondes, milliseconds)
+
+### wakeup(timeout, callback=None):
+Set the RTC wakeup timer to trigger at every timeout (in ms).
+This is another way to wake the board ftom a sleep state.
+Callback (if given (hence not None)) will be executed at every trigger.
+
+### info:
+Get the information about the startup time and reset source.
+
+### calibration:
+Get or set the RTC calibration.
 
 
+<a id="CAN"></a>
+## CAN
 
-pyb.RTC -> allow the user to manipulate the Real Time Clock inside the board. Here's the most commun and used methods:
-datetime -> return (year, month, day, day of the week, hours, minutes, secondes, milliseconds)
-datetime(date) -> set the time to the time send (must be the same type as the one above)
-Other methods can existe and may be used, but this are the most used one.
+### pyb.CAN: int/str -> CAN
+Create a CAN object on the given bus (as an integer or string).
+For the integer, it can be either 1 or 2 and the string either 'YA' or 'YB'. (You should prefer using integer).
 
-py
+The methods are:
+
+### init:
+Initialise the CAN. It has a few parameters:
+	- mode: NORMAL, LOOPBACK, SILENT, SILENT\_LOOPBACK
+This parameter is the only one that hasn't a default value, so the only one that must be specify.
+	- prescaler: integer by which the clock input of the CAN will be devided to generate the nominal bit time quanta (default is 100).
+	- sjw: resynchronisation jump width (default is 1). Can be from 1 to 4.
+	- bs1: define the location of the sample point in units of the time quanta for nominal bit (default 6). Can be from 1 to 16.
+	- bs2: define the location of the transmit point in units of the time quanta for nominal bit (default 8). Can be from 1 to 8.
+	- auto\_restart 
+
+
