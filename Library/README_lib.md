@@ -64,7 +64,7 @@ If you have any question about this, do not hesitate to ask a student of a teach
 # Functions available
 
 <a id="mdelay"></a>
-### pyb.delay: int -> void
+### <span style="color: blue;">pyb.delay: int -&gt; void</span>
 Wait for n milliseconds.
 
 <a id="udelay"></a>
