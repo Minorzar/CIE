@@ -6,10 +6,22 @@ They are not really libraries but part of code you may need, feel free to use th
 
 This document follow t
 
-[Functions](#Functions)
+- [pyb.infos](#infos)
+- [Functions](#Functions)
+	- [delay](#mdelay)
+	- [udelay](#udelay)
+	- [millis](#millis)
+	- [micros](#micros)
+	- [hard](#hard)
+	- [disable](#disable)
+	- [enable](#enable)
+	- [stop](#stop)
+	- [rng](#rng)
+- [Classes](#Classes)
 
 The board comes already with some function that allow the user to code.
 
+<a id="infos"></a>
 # pyb.infos
 
 It will give informations as describe below:
@@ -51,35 +63,43 @@ If you have any question about this, do not hesitate to ask a student of a teach
 <a id="Functions"></a>
 # Functions available
 
-
+<a id="mdelay"></a>
 ### pyb.delay: int -> void
 Wait for n milliseconds.
 
+<a id="udelay"></a>
 ### pyb.udelay: int -> void
 Wait for n microseconds.
 
+<a id="millis"></a>
 ### pyb.millis: void -> int
 Gives the number of milliseconds since last hard reset.
 
+<a id="micros"></a>
 ### pyb.micros: void -> int
 Gives the number of microseconds since last hard reset.
 
+<a id="hard"></a>
 ### pyb.hard\_reset: void -> void
 Hard reset the board.
 
+<a id="disable"></a>
 ### pyb.disable\_irq, void -> bool
 Disable the interrupt requests. The boolean return is the previous state of the IRQ.
 
+<a id="enable"></a>
 ### pyb.enable\_irq, bool -> void
 Enable (if True) the interrupt requests.
 
+<a id="stop"></a>
 ### pyb.stop: void -> void
 Set the board in a sleeping state. The only way to remove this state is a hard reset (external) or a RTC event (see below). Execution will continue where it stops.
 
+<a id="rng"></a>
 ### pyb.rng: void -> int
 Return a 30 bit hardware generated random number.
 
-
+<a id="Classes"></a>
 # Classes
 
 
