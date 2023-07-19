@@ -25,6 +25,7 @@ This document contains most if not all the information you may need for your cha
 	- [PinAF](#PinAF)
 	- [ExtInt](#ExtInt)
 	- [RTC](#RTC)
+	- [CAN](#CAN)
 
 
 <a id="infos"></a>
@@ -265,14 +266,14 @@ value({0,1}), set the pin to high (1) or low (0).
 
 ### init(mode, pull):
 Where the mode can be: 
-		- pyb.Pin.IN (input pin)
-		- pyb.Pin.OUT\_PP (output in push-pull)
-		- pyb.Pin.OUT\_OD (output in open-drain)
-		- pyb.Pin.ALT (alternate, use for I2C and SPI for example
+- pyb.Pin.IN (input pin)
+- pyb.Pin.OUT\_PP (output in push-pull)
+- pyb.Pin.OUT\_OD (output in open-drain)
+- pyb.Pin.ALT (alternate, use for I2C and SPI for example
 and pull can be:
-		- pyb.Pin.PULL\_UP
-		- pyb.Pin.PULL\_DOWN
-		- None
+- pyb.Pin.PULL\_UP
+- pyb.Pin.PULL\_DOWN
+- None
 
 ### mode:
 Get the current mode of the pin (is not a set function).
@@ -308,7 +309,7 @@ Return the address of the GPIO block associated with the pin.
 To use it, you may use code like so:
 
 ```
-pinaf = pyb.Pin(pub.Pin.board.X1, mode=pyb.Pin.ALT, alt=1)
+pinaf = pyb.Pin(pyb.Pin.board.X1, mode=pyb.Pin.ALT, alt=1)
 ```
 With alt beeing the index of the alternate function in pyb.Pin.board.X1.af_list().
 
@@ -331,13 +332,13 @@ Return the base register associated with the peripheral assigned to the function
 
 ### pyb.ExtInt: str -> int -> int -> (ExtInt -> void) -> ExtInt
 Create an external interrupt on the pin enter as a str. The first int is the trigger and can be:
-		- pyb.ExtInt.IRQ\_RISING (trigger on rising edge)
-		- pyb.ExtInt.IRQ\_FALLING (trigger on falling edge)
-		- pyb.ExtInt.IRQ\_RISING_FALLING (trigger on a change of state)
+- pyb.ExtInt.IRQ\_RISING (trigger on rising edge)
+- pyb.ExtInt.IRQ\_FALLING (trigger on falling edge)
+- pyb.ExtInt.IRQ\_RISING_FALLING (trigger on a change of state)
 the second int is the pull of the pin and can be:
-		- pyb.ExtInt.PULL_NONE
-		- pyb.ExtInt.PULL_UP
-		- pyb.ExtInt.PULL_DOWN
+- pyb.ExtInt.PULL_NONE
+- pyb.ExtInt.PULL_UP
+- pyb.ExtInt.PULL_DOWN
 the function is the callback function that'll be use when the interrupt is trigger
 
 The methods are:
@@ -385,12 +386,34 @@ The methods are:
 
 ### init:
 Initialise the CAN. It has a few parameters:
-	- mode: NORMAL, LOOPBACK, SILENT, SILENT\_LOOPBACK
-This parameter is the only one that hasn't a default value, so the only one that must be specify.
-	- prescaler: integer by which the clock input of the CAN will be devided to generate the nominal bit time quanta (default is 100).
-	- sjw: resynchronisation jump width (default is 1). Can be from 1 to 4.
-	- bs1: define the location of the sample point in units of the time quanta for nominal bit (default 6). Can be from 1 to 16.
-	- bs2: define the location of the transmit point in units of the time quanta for nominal bit (default 8). Can be from 1 to 8.
-	- auto\_restart 
+- mode: NORMAL, LOOPBACK, SILENT, SILENT\_LOOPBACK
+This parameter is the only one that hasn't a default value, so the only one that must be specify. It's also, probably, the only one you'll have to use.
+- prescaler: integer by which the clock input of the CAN will be devided to generate the nominal bit time quanta (default is 100).
+- sjw: resynchronisation jump width (default is 1). Can be from 1 to 4.
+- bs1: define the location of the sample point in units of the time quanta for nominal bit (default 6). Can be from 1 to 16.
+- bs2: define the location of the transmit point in units of the time quanta for nominal bit (default 8). Can be from 1 to 8.
+- auto\_restart: sets whether the controller will automatically try and restart communications after entering the bus-off state. (default False)
+- baudrate: if not 0, the function will calculate (if possible) the CAN nominal bit time (overrinding prescaler, bs1 and bs2) that satisfies the baudrate and the sample\_point. (default 0).
+- sample\_point: (default 75), givent a percentage of the nominal bit time, it specifies the position of the bit sample with respet to the whole nominal bit time.
+- num\_filter\_bank: number of banks assigned to CAN(1), the reste of the 28 will be assigned to CAN(2).
+The other parameters are the same but with brs\_ before them and are use for the CAN FD. (default 14).
 
+### deinit:
+Turn off the CAN bus.
 
+### restart:
+Force a software restart of the CAN without resetting the configuration.
+
+### state:
+Return the state of the controller. Value can be:
+- CAN.STOPPED -> off and reset
+- CAN.ERROR\_ACTIVE -> on and both TEC and REC are less than 96.
+- CAN.ERROR\_WARNING -> on and TEC or REC is 96 or more.
+- CAN.ERROR\_PASSIVE -> on and TEC or REC is 128 or more.
+- CAN.BUS\_OFF -> on and TEC is over 255.
+
+### info
+Get information about the controller’s error states and TX and RX buffers. It will return them in a list like:
+```[TEC, REC, num\_of\ERROR\_WARNING, num\_of\_ERROR\_PASSIVE, num\_of\_BUS\_OFF, TX, RX0, RX1]```
+
+### setfilter(bank, mode, fifo, params, rtr, extframe):
