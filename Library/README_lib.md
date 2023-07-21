@@ -17,6 +17,7 @@ This document contains most if not all the information you may need for your cha
 	- [rng](#rng)
 - [Classes](#Classes)
 	- [Timer](#Timer)
+	- [Timerchannel](#Timerchannel)
 	- [ADC](#ADC)
 	- [DAC](#DAC)
 	- [Switch](#Switch)
@@ -26,6 +27,7 @@ This document contains most if not all the information you may need for your cha
 	- [ExtInt](#ExtInt)
 	- [RTC](#RTC)
 	- [CAN](#CAN)
+
 
 
 <a id="infos"></a>
@@ -120,12 +122,17 @@ The methods are:
 ### init:
 Initialise the timer. Initialisation must be made either by frequency (in Hz) with timer.init(freq = ...) or by prescaler and period (much more complex) with timer.init(prescaler = ..., period = ...).
 Note that there are other parameters that may be initialise, but there are specific methods to do so.
+It also has the parameter brk which can be:
+- Timer.BRK\_OFF -> kill the output when the timer is off
+- Timer.BRK\_LOW -> kill the output when the pin is set low
+- Timer.BRK\_HIGH -> kill the output when the pin is set high
 
 ### deinit:
 Deinitialises the timer (set to default every parameters).
 
-### callback(fun):
-Allow user to make a callback function. If fun is None, callback will be disable.
+### callback:
+Allow user to make a callback function. Parameter is:
+- fun -> if None, callback will be disable, otherwise it will be the function use
 
 ### counter:
 If a value is given, it will set the counter to the value, otherwise, it will get the current value of the counter.
@@ -144,6 +151,64 @@ Get the frequency of the source of the timer.
 
 There is another type of timer (timerchannel), but I don't think you'll need it. If you need it, feel free to ask students or teacher about them.
 
+<a id="Timerchannel"></a>
+## Timerchannel
+
+### pyb.Timer.channel: int -> int -> Timerchannel
+Create a timerchannel object. It has Two parameters with many possibilities:
+- mode -> Mode on which the timer will be, it can be Timer.:
+	- PWM -> active high
+	- PMW\_INVERTED -> active low
+	- OC\_TIMING -> no pin is driven
+	- OC\_ACTIVE -> pin active if a compare match occurs
+	- OC\_INACTIVE -> pin will be inactive if a compare match occurs
+	- OC\_TOGGLE -> pin toggle if a compare match occurs
+	- OC\_FORCED\_ACTIVE -> forced active (compare match ignored)
+	- OC\_FORCED\_INACTIVE -> forced inactive (compare match ignored)
+	- IC -> Input Capture mode
+	- ENC\_A -> Encoder mode, counter update when CH1 changes
+	- ENC\_B -> Encoder mode, counter update when CH2 changes
+	- ENC\_AB -> Encoder mode, counter update when CH1 or CH2 changes
+- callback -> Callback function (see callback method)
+- pin -> Either None or a Pin. If specified (and not None) this will cause the alternate function of the the indicated pin to be configured for this timer channel. An error will be raised if the pin doesn’t support any alternate functions for this timer channel
+
+They are other keyword depending of the mode:
+- PWM
+	- pulse\_width -> determines the initial pusle width value to use
+	- pusle\_width\_percent -> determines the initial pulse width percentage to use
+- OC
+	- compare -> determines the initial value of the compare register
+	- polarity
+		- Timer.HIGH -> active high
+		- Timer.LOW -> active low
+- IC
+	- polarity
+		- Timer.RISING -> capture on rising edge
+		- Timer.FALLING -> capture on falling edge
+		- Timer.BOTH -> capture on both edge
+
+The methods are:
+
+### callback:
+Define the callback function, if set to None, it will be disable. The parameter is:
+- fun -> the callback function, it get only one parameter which is the timer object
+
+### capture:
+Get or set the capture value associated with a channel. Use it for input mode. Parameter is:
+- value -> The value that will be set. If none is given, it will get the value of the channel.
+
+### compare:
+Get or set the compare value associated with a channel. Use it for output mode. Parameter is:
+- value -> The value that will be set. If none is given, it will get the value of the channel.
+
+### pulse\_width:
+Get or set the pulse width value associated with a channel. Use it for PWM mode. Parameter is:
+- value -> The value that will be set. If none is given, it will get the value of the channel.
+
+### pulse\_width\_percent:
+Get or set the pulse width percentage associated with a channel. The value is a number between 0 and 100. Parameter is:
+- value -> The value of the percent that will be set. If none is given, it will get the current value.
+
 <a id="ADC"></a>
 ## ADC
 
@@ -155,15 +220,20 @@ The methods are:
 ### read:
 Read the analog value of the pin and return it.
 
-### read\_timed(buf, freq):
-Buf is an array or a bytearray, freq an integer (in Hz).
-It read the analog values into the buf at a rate set by freq.
+### read\_timed:
+It read the analog values into the buf at a rate set by freq. So it has two parameters:
+- buf -> an array or a bytearray
+- freq -> an integer (in Hz)
 
-### read\_timed\_multi((ADC), (buf), freq):
-It is basically the previous methods but use for more than one ADC pin. Parameters in parenthesis must be tuple of the same size.
+### read\_timed\_multi:
+It is basically the previous methods but use for more than one ADC pin. The parameters are:
+- ADC -> a tuple of ADC pin
+- buf -> a tuple of array or bytearray
+- freq -> an integer (in Hz)
+Be aware that the tuple have to be of the same size.
 
-### read\_channel(channel):
-Allow to read directly the value of the channel enter in parameter.
+### read\_channel:
+Allow to read directly the value of the channel enter in parameter (as an integer).
 
 ### read\_core\_vref:
 Return the MCU VREF (REFerence Voltage).
@@ -185,23 +255,29 @@ Create a digital to analog converter associated to the pin entered as a string.
 
 The methods are:
 
-### init(bit,buffering):
-Set the bit (value may be 8 or 12) and buffering may be None, True or False (None -> default, True -> enable, False -> disable).
+### init:
+Reinitialise the DAC with a new bit and buffering. The parameters are:
+- bit -> may be 8 or 12
+- buffering -> may be None, True or False (None -> default, True -> enable, False -> disable).
 
 ### deinit:
 Free the ressources link to the DAC.
 
-### write(value):
-Write a value in the DAC, value must be between 0 and 4095.
+### write:
+Write a value in the DAC. Only one parameter:
+- value -> must be between 0 and 4095.
 
-### write\_timed(buf, freq):
-Write a serie of value (stored in the buf variable (either an array or a bytearray)) in the DAC at the frequency entered in parameter in Hz.
+### write\_timed:
+Write a serie of value in the DAC at a given frequency. Parameters are:
+- buf -> thing that will be written in the DAC (either an array or a bytearray)
+- freq -> the frequency rate used (in Hz)
 
-### write\_timed\_multi(bufs, freq):
-Same as before but with multiple DAC channel. bufs this time is an array of array or array of bytearray.
+### write\_timed\_multi:
+Same as before but with multiple DAC channel. Same parameters as before too but buf is an array of array or array of bytearray this time.
 
-### triangle(freq):
-Generate a triangular wave at the frequency entered as a parameter (the amplitude will probably be either 3.3V or 5V).
+### triangle:
+Generate a triangular wave (the amplitude will probably be either 3.3V or 5V). The parameter is:
+- frequency -> frequency of the wave
 
 ### noise:
 generate a noise signal on the DAC.
@@ -240,8 +316,9 @@ Turn off the LED
 ### toggle:
 Change the state of the LED
 
-### intensity(n):
-Set the intensity of the LED to n (do not work on our board as far as I know)
+### intensity:
+Get or set the intensity of the LED to a given value (do not work on our board as far as I know).
+
 
 <a id="Pin"></a>
 ## Pin
@@ -306,7 +383,7 @@ Return the address of the GPIO block associated with the pin.
 <a id="PinAF"></a>
 ## PinAF
 
-To use it, you may use code like so:
+To create the object, you need to use (for the pin X1):
 
 ```
 pinaf = pyb.Pin(pyb.Pin.board.X1, mode=pyb.Pin.ALT, alt=1)
@@ -414,6 +491,69 @@ Return the state of the controller. Value can be:
 
 ### info
 Get information about the controller’s error states and TX and RX buffers. It will return them in a list like:
-```[TEC, REC, num\_of\ERROR\_WARNING, num\_of\_ERROR\_PASSIVE, num\_of\_BUS\_OFF, TX, RX0, RX1]```
+```
+[TEC, REC, num\_of\ERROR\_WARNING, num\_of\_ERROR\_PASSIVE, num\_of\_BUS\_OFF, TX, RX0, RX1]
+```
 
-### setfilter(bank, mode, fifo, params, rtr, extframe):
+### setfilter():
+This function configure a filter bank. The different parameters are:
+- bank -> a CAN controller filter bank (or CAN FD filter index) it's an integer from 0 to num\_filter\_banks -1
+- mode -> the mode on which the filter should operate, it can be:
+	- CAN.LIST16 (Four 16 bit ids that will be accepted)
+	- CAN.LIST32 (Two 32 bit ids that will be accepted)
+	- CAN.MASK16 (Two 16 bit id/mask pairs. The first pair, 1 and 3 will accept all ids that have bit 0 = 1 and bit 1 = 0. The second pair, 4 and 4, will accept all ids that have bit 2 = 1.)
+	- CAN.MASK32 (same but with 32 bit id/mask pairs.)
+for CAN.
+	- CAN.RANGE (Two ids that represent a range of accepted ids)
+	- CAN.DUAL (Two ids that will be accepted)
+	- CAN.MASK (One filter ID and a mask)
+for CAN FD.
+
+- rtr (ignore for CAN FD) -> an array of booleans that states if a filter should accept a remote transmission request message. The array has different size depending on the mode:
+	- CAN.LIST16 -> 4
+	- CAN.LIST32 -> 2
+	- CAN.MASK16 -> 2
+	- CAN.MASK32 -> 1
+- extframe -> a boolean that, if set to True, gives the frame a 29 bits identifier (otherwise it would be the classical 11 bits).
+
+### clearfilter:
+It clears and disables a filter bank. The parameters are:
+- bank -> the CAN controller filter bank or the CAN FD filter index
+- extframe (use for CAN FD) -> if True, it will clear an extended filter otherwise, it will clear a standard one
+
+### any:
+Return a boolean that indicate if there is anything in the given FIFO. Parameter:
+- fifo -> an integer that represent the FIFO you want to check
+
+### recv:
+Use to receive data on the bus, it will return a tuple:
+- ID of the message
+- is the message ID extended 
+- is the message an RTR message
+- the FMI (Filter Match Index) value
+- an array containing the data receive
+It will need some parameters:
+- fifo -> the FIFO you want to check
+- list -> optional, if None, it create a new tuple, otherwise, it must be a five-length tuple with the corresponding output type
+- timeout -> time the pin will wait for the receive (in ms)
+
+### send:
+Send a message on the bus. There are some parameters:
+- data -> the data that will be send (either an integer or a buffer object)
+- id -> the id of the message to be sent
+- timeout -> time the pin will wait for the transmit (in ms)
+- rtr -> a boolean that specifies if the message will be send as a RTR request
+- extframe -> a boolean that, if set to True, gives the frame a 29 bits identifier (otherwise it would be the classical 11 bits)
+- fdf (CAN FD only) -> if set to True, it will have a FD frame format (meaning it will support data payloads up to 64 bytes)
+- brs (CAN FD only) -> if set to True, the bitrate switching mode is enabled, in which the data phase is transmitted at a different bitrate (used if brs has been modified in init)
+
+### rxcallback:
+Give the user the possibility to register a callback function on a given fifo. It has two parameters:
+- fifo -> the receiving fifo
+- fun -> the function executed when the fifo becomes non empty
+In general, the callback function must necessarily get two parameters which are:
+- bus -> the CAN object itself
+- reason -> the reason of callback that can be:
+	- 0 -> A message has been accepted into an empty FIFO
+	- 1 -> The FIFO is full
+	- 2 -> A message has been lost because the FIFO was full
