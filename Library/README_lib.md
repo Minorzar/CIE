@@ -15,17 +15,21 @@ This document contains most if not all the information you may need for your cha
 	- [enable](#enable)
 	- [stop](#stop)
 	- [rng](#rng)
-- [Classes](#Classes)
-	- [Timer](#Timer)
-	- [Timerchannel](#Timerchannel)
-	- [ADC](#ADC)
-	- [DAC](#DAC)
-	- [Switch](#Switch)
-	- [LED](#LED)
+- [Usual classes](#Usual)
 	- [Pin](#Pin)
 	- [PinAF](#PinAF)
-	- [ExtInt](#ExtInt)
+	- [ADC](#ADC)
+	- [DAC](#DAC)
+	- [Timer](#Timer)
+	- [LED](#LED)
+	- [Switch](#Switch)
+	- [I2C](#I2C)
+	- [SPI](#SPI)
+	- [UART](#UART)
+- [Extra classes](#Extra)
+	- [Timerchannel](#Timerchannel)
 	- [RTC](#RTC)
+	- [ExtInt](#ExtInt)
 	- [CAN](#CAN)
 
 
@@ -72,252 +76,54 @@ If you have any question about this, do not hesitate to ask a student of a teach
 <a id="Functions"></a>
 # Functions available
 
+
 <a id="mdelay"></a>
 ### pyb.delay: int -> void
 Wait for n milliseconds.
+
 
 <a id="udelay"></a>
 ### pyb.udelay: int -> void
 Wait for n microseconds.
 
+
 <a id="millis"></a>
 ### pyb.millis: void -> int
 Gives the number of milliseconds since last hard reset.
+
 
 <a id="micros"></a>
 ### pyb.micros: void -> int
 Gives the number of microseconds since last hard reset.
 
+
 <a id="hard"></a>
 ### pyb.hard\_reset: void -> void
 Hard reset the board.
+
 
 <a id="disable"></a>
 ### pyb.disable\_irq, void -> bool
 Disable the interrupt requests. The boolean return is the previous state of the IRQ.
 
+
 <a id="enable"></a>
 ### pyb.enable\_irq, bool -> void
 Enable (if True) the interrupt requests.
+
 
 <a id="stop"></a>
 ### pyb.stop: void -> void
 Set the board in a sleeping state. The only way to remove this state is a hard reset (external) or a RTC event (see below). Execution will continue where it stops.
 
+
 <a id="rng"></a>
 ### pyb.rng: void -> int
 Return a 30 bit hardware generated random number.
 
-<a id="Classes"></a>
-# Classes
 
-<a id="Timer"></a>
-## Timer
-
-### pyb.Timer: int -> Timer
-Create a timer object, the integer in parameter can be 1 to 14 (you may need to look the board documentation to be sure to use the correct integer).
-
-The methods are:
-
-### init:
-Initialise the timer. Initialisation must be made either by frequency (in Hz) with timer.init(freq = ...) or by prescaler and period (much more complex) with timer.init(prescaler = ..., period = ...).
-Note that there are other parameters that may be initialise, but there are specific methods to do so.
-It also has the parameter brk which can be:
-- Timer.BRK\_OFF -> kill the output when the timer is off
-- Timer.BRK\_LOW -> kill the output when the pin is set low
-- Timer.BRK\_HIGH -> kill the output when the pin is set high
-
-### deinit:
-Deinitialises the timer (set to default every parameters).
-
-### callback:
-Allow user to make a callback function. Parameter is:
-- fun -> if None, callback will be disable, otherwise it will be the function use
-
-### counter:
-If a value is given, it will set the counter to the value, otherwise, it will get the current value of the counter.
-
-### freq:
-Set or get the value of the frequency.
-
-### period:
-Set or get the value of the period.
-
-### prescaler:
-Set or get the value of the prescaler.
-
-### source\_freq:
-Get the frequency of the source of the timer.
-
-There is another type of timer (timerchannel), but I don't think you'll need it. If you need it, feel free to ask students or teacher about them.
-
-<a id="Timerchannel"></a>
-## Timerchannel
-
-### pyb.Timer.channel: int -> int -> Timerchannel
-Create a timerchannel object. It has Two parameters with many possibilities:
-- mode -> Mode on which the timer will be, it can be Timer.:
-	- PWM -> active high
-	- PMW\_INVERTED -> active low
-	- OC\_TIMING -> no pin is driven
-	- OC\_ACTIVE -> pin active if a compare match occurs
-	- OC\_INACTIVE -> pin will be inactive if a compare match occurs
-	- OC\_TOGGLE -> pin toggle if a compare match occurs
-	- OC\_FORCED\_ACTIVE -> forced active (compare match ignored)
-	- OC\_FORCED\_INACTIVE -> forced inactive (compare match ignored)
-	- IC -> Input Capture mode
-	- ENC\_A -> Encoder mode, counter update when CH1 changes
-	- ENC\_B -> Encoder mode, counter update when CH2 changes
-	- ENC\_AB -> Encoder mode, counter update when CH1 or CH2 changes
-- callback -> Callback function (see callback method)
-- pin -> Either None or a Pin. If specified (and not None) this will cause the alternate function of the the indicated pin to be configured for this timer channel. An error will be raised if the pin doesn’t support any alternate functions for this timer channel
-
-They are other keyword depending of the mode:
-- PWM
-	- pulse\_width -> determines the initial pusle width value to use
-	- pusle\_width\_percent -> determines the initial pulse width percentage to use
-- OC
-	- compare -> determines the initial value of the compare register
-	- polarity
-		- Timer.HIGH -> active high
-		- Timer.LOW -> active low
-- IC
-	- polarity
-		- Timer.RISING -> capture on rising edge
-		- Timer.FALLING -> capture on falling edge
-		- Timer.BOTH -> capture on both edge
-
-The methods are:
-
-### callback:
-Define the callback function, if set to None, it will be disable. The parameter is:
-- fun -> the callback function, it get only one parameter which is the timer object
-
-### capture:
-Get or set the capture value associated with a channel. Use it for input mode. Parameter is:
-- value -> The value that will be set. If none is given, it will get the value of the channel.
-
-### compare:
-Get or set the compare value associated with a channel. Use it for output mode. Parameter is:
-- value -> The value that will be set. If none is given, it will get the value of the channel.
-
-### pulse\_width:
-Get or set the pulse width value associated with a channel. Use it for PWM mode. Parameter is:
-- value -> The value that will be set. If none is given, it will get the value of the channel.
-
-### pulse\_width\_percent:
-Get or set the pulse width percentage associated with a channel. The value is a number between 0 and 100. Parameter is:
-- value -> The value of the percent that will be set. If none is given, it will get the current value.
-
-<a id="ADC"></a>
-## ADC
-
-### pyb.ADC: str -> ADC
-Create an analog to digital converter associated to the pin entered as a string.
-
-The methods are:
-
-### read:
-Read the analog value of the pin and return it.
-
-### read\_timed:
-It read the analog values into the buf at a rate set by freq. So it has two parameters:
-- buf -> an array or a bytearray
-- freq -> an integer (in Hz)
-
-### read\_timed\_multi:
-It is basically the previous methods but use for more than one ADC pin. The parameters are:
-- ADC -> a tuple of ADC pin
-- buf -> a tuple of array or bytearray
-- freq -> an integer (in Hz)
-Be aware that the tuple have to be of the same size.
-
-### read\_channel:
-Allow to read directly the value of the channel enter in parameter (as an integer).
-
-### read\_core\_vref:
-Return the MCU VREF (REFerence Voltage).
-
-### read\_core\_temp:
-Return the MCU temperature.
-
-### read\_core\_vbat:
-Return the MCU VBAT (BATtery Voltage).
-
-### read\_vref:
-Return the MCU supply voltage.
-
-<a id="DAC"></a>
-## DAC:
-
-### pyb.DAC: str -> DAC
-Create a digital to analog converter associated to the pin entered as a string.
-
-The methods are:
-
-### init:
-Reinitialise the DAC with a new bit and buffering. The parameters are:
-- bit -> may be 8 or 12
-- buffering -> may be None, True or False (None -> default, True -> enable, False -> disable).
-
-### deinit:
-Free the ressources link to the DAC.
-
-### write:
-Write a value in the DAC. Only one parameter:
-- value -> must be between 0 and 4095.
-
-### write\_timed:
-Write a serie of value in the DAC at a given frequency. Parameters are:
-- buf -> thing that will be written in the DAC (either an array or a bytearray)
-- freq -> the frequency rate used (in Hz)
-
-### write\_timed\_multi:
-Same as before but with multiple DAC channel. Same parameters as before too but buf is an array of array or array of bytearray this time.
-
-### triangle:
-Generate a triangular wave (the amplitude will probably be either 3.3V or 5V). The parameter is:
-- frequency -> frequency of the wave
-
-### noise:
-generate a noise signal on the DAC.
-
-<a id="Switch"></a>
-## Switch
-
-### pyb.Switch: void -> Switch
-Create a switch object.
-
-The methods are:
-
-### \_\_call\_\_:
-Call switch object directly to get its state.
-
-### value:
-Return True or False depending of the state of the switch. (not really sure about the difference with \_\_call\_\_)
-
-### callback:
-Allow the user to define a callback function (exemple in the library)
-
-<a id="LED"></a>
-## LED
-
-## pyb.LED: int -> LED
-Create a LED object associated to the integer send (pyb.LED(1) will create the object LED for the user LED 1).
-
-The methods are:
-
-### on:
-Turn on the LED
-
-### off:
-Turn off the LED
-
-### toggle:
-Change the state of the LED
-
-### intensity:
-Get or set the intensity of the LED to a given value (do not work on our board as far as I know).
+<a id="Usual"></a>
+# Usual classes
 
 
 <a id="Pin"></a>
@@ -404,6 +210,262 @@ Return the name of the function.
 ### reg:
 Return the base register associated with the peripheral assigned to the function.
 
+
+<a id="ADC"></a>
+## ADC
+
+### pyb.ADC: str -> ADC
+Create an analog to digital converter associated to the pin entered as a string.
+
+The methods are:
+
+### read:
+Read the analog value of the pin and return it.
+
+### read\_timed:
+It read the analog values into the buf at a rate set by freq. So it has two parameters:
+- buf -> an array or a bytearray
+- freq -> an integer (in Hz)
+
+### read\_timed\_multi:
+It is basically the previous methods but use for more than one ADC pin. The parameters are:
+- ADC -> a tuple of ADC pin
+- buf -> a tuple of array or bytearray
+- freq -> an integer (in Hz)
+Be aware that the tuple have to be of the same size.
+
+### read\_channel:
+Allow to read directly the value of the channel enter in parameter (as an integer).
+
+### read\_core\_vref:
+Return the MCU VREF (REFerence Voltage).
+
+### read\_core\_temp:
+Return the MCU temperature.
+
+### read\_core\_vbat:
+Return the MCU VBAT (BATtery Voltage).
+
+### read\_vref:
+Return the MCU supply voltage.
+
+
+<a id="DAC"></a>
+## DAC:
+
+### pyb.DAC: str -> DAC
+Create a digital to analog converter associated to the pin entered as a string.
+
+The methods are:
+
+### init:
+Reinitialise the DAC with a new bit and buffering. The parameters are:
+- bit -> may be 8 or 12
+- buffering -> may be None, True or False (None -> default, True -> enable, False -> disable).
+
+### deinit:
+Free the ressources link to the DAC.
+
+### write:
+Write a value in the DAC. Only one parameter:
+- value -> must be between 0 and 4095.
+
+### write\_timed:
+Write a serie of value in the DAC at a given frequency. Parameters are:
+- buf -> thing that will be written in the DAC (either an array or a bytearray)
+- freq -> the frequency rate used (in Hz)
+
+### write\_timed\_multi:
+Same as before but with multiple DAC channel. Same parameters as before too but buf is an array of array or array of bytearray this time.
+
+### triangle:
+Generate a triangular wave (the amplitude will probably be either 3.3V or 5V). The parameter is:
+- frequency -> frequency of the wave
+
+### noise:
+generate a noise signal on the DAC.
+
+
+<a id="Timer"></a>
+## Timer
+
+### pyb.Timer: int -> Timer
+Create a timer object, the integer in parameter can be 1 to 14 (you may need to look the board documentation to be sure to use the correct integer).
+
+The methods are:
+
+### init:
+Initialise the timer. Initialisation must be made either by frequency (in Hz) with timer.init(freq = ...) or by prescaler and period (much more complex) with timer.init(prescaler = ..., period = ...).
+Note that there are other parameters that may be initialise, but there are specific methods to do so.
+It also has the parameter brk which can be:
+- Timer.BRK\_OFF -> kill the output when the timer is off
+- Timer.BRK\_LOW -> kill the output when the pin is set low
+- Timer.BRK\_HIGH -> kill the output when the pin is set high
+
+### deinit:
+Deinitialises the timer (set to default every parameters).
+
+### callback:
+Allow user to make a callback function. Parameter is:
+- fun -> if None, callback will be disable, otherwise it will be the function use
+
+### counter:
+If a value is given, it will set the counter to the value, otherwise, it will get the current value of the counter.
+
+### freq:
+Set or get the value of the frequency.
+
+### period:
+Set or get the value of the period.
+
+### prescaler:
+Set or get the value of the prescaler.
+
+### source\_freq:
+Get the frequency of the source of the timer.
+
+There is another type of timer (timerchannel), but I don't think you'll need it. If you need it, feel free to ask students or teacher about them.
+
+
+<a id="LED"></a>
+## LED
+
+## pyb.LED: int -> LED
+Create a LED object associated to the integer send (pyb.LED(1) will create the object LED for the user LED 1).
+
+The methods are:
+
+### on:
+Turn on the LED
+
+### off:
+Turn off the LED
+
+### toggle:
+Change the state of the LED
+
+### intensity:
+Get or set the intensity of the LED to a given value (do not work on our board as far as I know).
+
+
+<a id="Switch"></a>
+## Switch
+
+### pyb.Switch: void -> Switch
+Create a switch object.
+
+The methods are:
+
+### \_\_call\_\_:
+Call switch object directly to get its state.
+
+### value:
+Return True or False depending of the state of the switch. (not really sure about the difference with \_\_call\_\_)
+
+### callback:
+Allow the user to define a callback function (exemple in the library)
+
+
+<a id="I2C"></a>
+## I2C
+
+
+
+<a id="SPI"></a>
+## SPI
+
+
+<a id="UART"></a>
+## UART
+
+
+
+<a id="Extra"></a>
+# Extra classes
+
+
+<a id="Timerchannel"></a>
+## Timerchannel
+
+### pyb.Timer.channel: int -> int -> Timerchannel
+Create a timerchannel object. It has Two parameters with many possibilities:
+- mode -> Mode on which the timer will be, it can be Timer.:
+	- PWM -> active high
+	- PMW\_INVERTED -> active low
+	- OC\_TIMING -> no pin is driven
+	- OC\_ACTIVE -> pin active if a compare match occurs
+	- OC\_INACTIVE -> pin will be inactive if a compare match occurs
+	- OC\_TOGGLE -> pin toggle if a compare match occurs
+	- OC\_FORCED\_ACTIVE -> forced active (compare match ignored)
+	- OC\_FORCED\_INACTIVE -> forced inactive (compare match ignored)
+	- IC -> Input Capture mode
+	- ENC\_A -> Encoder mode, counter update when CH1 changes
+	- ENC\_B -> Encoder mode, counter update when CH2 changes
+	- ENC\_AB -> Encoder mode, counter update when CH1 or CH2 changes
+- callback -> Callback function (see callback method)
+- pin -> Either None or a Pin. If specified (and not None) this will cause the alternate function of the the indicated pin to be configured for this timer channel. An error will be raised if the pin doesn’t support any alternate functions for this timer channel
+
+They are other keyword depending of the mode:
+- PWM
+	- pulse\_width -> determines the initial pusle width value to use
+	- pusle\_width\_percent -> determines the initial pulse width percentage to use
+- OC
+	- compare -> determines the initial value of the compare register
+	- polarity
+		- Timer.HIGH -> active high
+		- Timer.LOW -> active low
+- IC
+	- polarity
+		- Timer.RISING -> capture on rising edge
+		- Timer.FALLING -> capture on falling edge
+		- Timer.BOTH -> capture on both edge
+
+The methods are:
+
+### callback:
+Define the callback function, if set to None, it will be disable. The parameter is:
+- fun -> the callback function, it get only one parameter which is the timer object
+
+### capture:
+Get or set the capture value associated with a channel. Use it for input mode. Parameter is:
+- value -> The value that will be set. If none is given, it will get the value of the channel.
+
+### compare:
+Get or set the compare value associated with a channel. Use it for output mode. Parameter is:
+- value -> The value that will be set. If none is given, it will get the value of the channel.
+
+### pulse\_width:
+Get or set the pulse width value associated with a channel. Use it for PWM mode. Parameter is:
+- value -> The value that will be set. If none is given, it will get the value of the channel.
+
+### pulse\_width\_percent:
+Get or set the pulse width percentage associated with a channel. The value is a number between 0 and 100. Parameter is:
+- value -> The value of the percent that will be set. If none is given, it will get the current value.
+
+
+<a id="RTC"></a>
+## RTC
+
+### pyb.RTC
+Allow the user to manipulate the Real Time Clock inside the board.
+
+The methods are:
+
+### datetime:
+Return or set (year, month, day, day of the week, hours, minutes, secondes, milliseconds)
+
+### wakeup(timeout, callback=None):
+Set the RTC wakeup timer to trigger at every timeout (in ms).
+This is another way to wake the board ftom a sleep state.
+Callback (if given (hence not None)) will be executed at every trigger.
+
+### info:
+Get the information about the startup time and reset source.
+
+### calibration:
+Get or set the RTC calibration.
+
+
 <a id="ExtInt"></a>
 ## ExtInt
 
@@ -428,28 +490,6 @@ Disable the external interrupt
 
 ### line:
 Return the pin number
-
-<a id="RTC"></a>
-## RTC
-
-### pyb.RTC
-Allow the user to manipulate the Real Time Clock inside the board.
-
-The methods are:
-
-### datetime:
-Return or set (year, month, day, day of the week, hours, minutes, secondes, milliseconds)
-
-### wakeup(timeout, callback=None):
-Set the RTC wakeup timer to trigger at every timeout (in ms).
-This is another way to wake the board ftom a sleep state.
-Callback (if given (hence not None)) will be executed at every trigger.
-
-### info:
-Get the information about the startup time and reset source.
-
-### calibration:
-Get or set the RTC calibration.
 
 
 <a id="CAN"></a>
@@ -492,10 +532,10 @@ Return the state of the controller. Value can be:
 ### info
 Get information about the controller’s error states and TX and RX buffers. It will return them in a list like:
 ```
-[TEC, REC, num\_of\ERROR\_WARNING, num\_of\_ERROR\_PASSIVE, num\_of\_BUS\_OFF, TX, RX0, RX1]
+[TEC, REC, num_of_ERROR_WARNING, num_of_ERROR_PASSIVE, num_of_BUS_OFF, TX, RX0, RX1]
 ```
 
-### setfilter():
+### setfilter:
 This function configure a filter bank. The different parameters are:
 - bank -> a CAN controller filter bank (or CAN FD filter index) it's an integer from 0 to num\_filter\_banks -1
 - mode -> the mode on which the filter should operate, it can be:
