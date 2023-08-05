@@ -93,7 +93,7 @@ If you have any question about this, do not hesitate to ask a student of a teach
 
 
 <a id="mdelay"></a>
-### pyb.delay: int -> void
+### pyb.delay: int &rarr; void
 Wait for n milliseconds.
 
 
