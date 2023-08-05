@@ -23,6 +23,7 @@ This document contains most if not all the information you may need for your cha
 	- [Timer](#Timer)
 	- [LED](#LED)
 	- [Switch](#Switch)
+- [Communication classes](#Comm)
 	- [I2C](#I2C)
 	- [SPI](#SPI)
 	- [UART](#UART)
@@ -380,6 +381,10 @@ Return True or False depending of the state of the switch. (not really sure abou
 Allow the user to define a callback function (exemple in the library).
 
 
+<a id="Comm"></a>
+# Communication classes
+
+
 <a id="I2C"></a>
 ## I2C
 
@@ -395,7 +400,7 @@ Parameters are:
 - gencall -> If True, the bus will support general call mode. Default is False.
 - dma -> if True, DMA will be allow for the I2C transfers. Default is False.
 
-You may at first only use pyb.I2C as an int -> I2C function with only the bus specify and the use the method init with the other parameters.
+You may at first only use pyb.I2C as an int -> I2C function with only the bus specify and the use then method init with the other parameters.
 
 The methods are:
 
@@ -459,12 +464,134 @@ Return a list of the all the I2C addresses (from 0x01 to 0x7f) that respond. Wil
 
 ### pyb.SPI: int -> int -> int -> int -> int -> int -> int -> int -> bool -> bool -> SPI
 Create a SPI object. Parameters are:
+- bus -> The bus on which the SPI object will be created.
+- mode -> The mode on which the SPI object will work, it can be:
+	- SPI.CONTROLLER
+	- SPI.PERIPHERAL
+- baudrate -> The SCK clock rate. Default is 328125.
+- prescaler -> Use to derive the SCK from the APB bus frequency. It will overrides the baudrate. It can be a power of two up to 256 starting at 2. Default is -1 (meaning deactivated).
+- polarity -> Level on which the idle clock sit at. Can be 0 or 1. Default is 1.
+- phase -> Sample the data on the first or second clock edge. Can be 0 or 1 respectively. Default is 0.
+- bits -> Size of the world that will be transfer in bits. Can be 8 or 16. Default is 8.
+- firstbit -> Select the first bit of the world. It can be:
+	- SPI.LSB -> Set the first bit to be the least significant bit.
+	- SPI.MSB -> Set the first bit to be the most significant bit.
+- ti -> Indicate Texas Instrument signal is set to True. Default is False (meaning Motorola signal conventions).
+- crc -> Define the CRC using a polynomial specifier (a binary definition of the polynome (example: 1011 =x^3+x+1). First and last bit must be 1). Default is None (no crc used).
 
+You may at first only use pyb.SPI as an int -> SPI function with only the bus specify and then use the method init with the other parameters.
+
+Methods are:
+
+### init:
+Initialse the SPI bus if it has not be made previously or if the bus was deinit. Parameters are:
+- mode -> The mode on which the SPI object will work, it can be:
+	- SPI.CONTROLLER
+	- SPI.PERIPHERAL
+- baudrate -> The SCK clock rate. Default is 328125.
+- prescaler -> Use to derive the SCK from the APB bus frequency. It will overrides the baudrate. It can be a power of two up to 256 starting at 2. Default is -1 (meaning deactivated).
+- polarity -> Level on which the idle clock sit at. Can be 0 or 1. Default is 1.
+- phase -> Sample the data on the first or second clock edge. Can be 0 or 1 respectively. Default is 0.
+- bits -> Size of the world that will be transfer in bits. Can be 8 or 16. Default is 8.
+- firstbit -> Select the first bit of the world. It can be:
+	- SPI.LSB -> Set the first bit to be the least significant bit.
+	- SPI.MSB -> Set the first bit to be the most significant bit.
+- ti -> Indicate Texas Instrument signal is set to True. Default is False (meaning Motorola signal conventions).
+- crc -> Define the CRC using a polynomial specifier (a binary definition of the polynome (example: 1011 =x^3+x+1). First and last bit must be 1). Default is None (no crc used).
+
+### deinit:
+Turn off the SPI bus and reset all parameters to default.
+
+### recv:
+Receive data on the bus. Parameters are:
+- recv -> Number of byte to receive if it's an integer, if you have given a buffer, the data will be written in the buffer.
+- timeout -> The timeout to wait for the receive in ms. Default is 5000.
+If recv is a buffer, the data receive will be stored directly in it, otherwise, you must use this function as a function that returns a buffer.
+
+### send:
+Send data on the bus. Parameters are:
+- send -> The data that will be send. It must be either an integer or a buffer.
+- timeout -> The timeout to wait for the send in ms. Default is 5000.
+
+### send\_recv:
+Send and receive data on the bus at the same time. Parameters are:
+- send -> The data that will be send. It must be either an integer or a buffer.
+- recv -> A buffer that will be used to stored the receive data. Default is None.
+- timeout -> The timeout to wait for the receive in ms. Default is 5000.
+If recv is not specify (left to None), the function must be use a function that returns a buffer.
 
 
 <a id="UART"></a>
 ## UART
 
+### pyb.UART: int -> int -> int -> int -> int -> int -> int -> int -> int -> UART
+Create an UART object. Parameters are:
+- bus -> The pins on which the UART will be configure.
+- baudrate -> The clock rate.
+- bits -> Number of bit per character. Can be 7, 8 or 9.
+- parity -> The detection use to check for integrity during the transmission. Can be None, 0 (even) or 1 (odd).
+- stop -> Number of stop bits. Can be 1 or 2.
+- flow -> St the flow control type. Can be:
+	- 0
+	- UART.RTS
+	- UART.CTS
+	- UART.RTS | UART.CTS
+- timeout -> The timeout to wait for writing and reading the first character.
+- timeout\_char -> Timeout to wait between each character while writing or reading.
+- read\_buf\_len -> The caracter length of the read buffer. Set it to 0 to disable it.
+You may only specify the pins to use, but you'll need to use the init method before using the UART port.
+
+Methods are:
+
+### init:
+Initialise the UART port with the specify options. Parameters are:
+- baudrate -> The clock rate.
+- bits -> Number of bit per character. Can be 7, 8 or 9. Default is 8.
+- parity -> The detection use to check for integrity during the transmission. Can be None, 0 (even) or 1 (odd). Default is None.
+- stop -> Number of stop bits. Can be 1 or 2. Default is 1.
+- flow -> St the flow control type. Can be:
+	- 0
+	- UART.RTS
+	- UART.CTS
+	- UART.RTS | UART.CTS
+Default is 0.
+- timeout -> The timeout to wait for writing and reading the first character. Default is 0.
+- timeout\_char -> Timeout to wait between each character while writing or reading. Default is 0.
+- read\_buf\_len -> The caracter length of the read buffer. Set it to 0 to disable it. Default is 64.
+
+### deinit:
+Turn off the UART port. Reset all value to default value before doing so.
+
+### any:
+Returns the number of bytes wainting (if none is waiting, it will return 0).
+
+### read:
+Read character that are waiting. Parameter is:
+- nbytes -> If specified, the reading will be at most nbytes bytes. If the buffer use to store the return value has nbytes available, it returns immediately the value, otherwise it will return it only when the buffer is full or timeout elapses. If not specified, return as much data as possible and returns the data only when timeout has elapsed. (It may be a bit tricky, feel free to ask for help).
+
+### readchar:
+Receive a single character on the bus. The character will be return as an integer (ASCII code). Returns -1 on timeout.
+
+### readinto:
+Read bytes into the buffer specified in parameter. Parameters are:
+- buf -> The buffer in which the data will be stored.
+- nbytes -> Number of byte to be read. If not specified, it will read at most len(buf) bytes.
+Return the number of byte read and stored or None on timeout.
+
+### readline:
+Read a line (must end by a newline character '\r'). If a '\r' character exists, the line is return immediately. If the timeout elapses, all the data available will be return. If no data is available, it will return None.
+
+### write:
+Write the buffer given in parameter to the bus. If the characters are 7 or 8 bits wide, the each byte is one character, if they are 9 bits wide, then two bytes are used for each character (so the buffer must have an even size). Parameter is:
+- buf -> The buffer on which the data to write is.
+Return the number of byte written. If timeout occurs with no byte written, it returns None.
+
+### writechar:
+Write a signle character on the bus. Parameter is:
+- char -> The character to write. It must be an interger (ASCII code).
+
+### sendbreak:
+Send a break condition on the bus, thus driving the bus low for a duration of 13 bits.
 
 
 <a id="Extra"></a>
